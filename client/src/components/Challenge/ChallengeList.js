@@ -13,6 +13,8 @@ const ChallengeList = () => {
     const [keyword, setKeyword] = useState('');
     const [searchtype, setSearchtype] = useState('');
     const [rankingData, setRankingData] = useState('');
+    const [mtype, setMtype] = useState('');
+    const [userUuid, setUserUuid] = useState('');
 
     useEffect(() => {
         const token = cookie.load('token'); // 쿠키에서 토큰 가져오기
@@ -22,8 +24,37 @@ const ChallengeList = () => {
                 .catch(error => console.error('토큰에서 아이디를 읽어올 수 없습니다:', error));
         }
         fetchChallenges();
-        //fetchMainChallenges();
+        fetchMainChallenges();
     }, [searchtype, keyword, currentPage]);
+
+    useEffect(() => {
+        console.log("Updated mtype:", mtype);
+    }, [mtype]);
+
+     // mtype을 가져오는 함수
+     const fetchMtype = async () => {
+        try {
+            // 쿠키에서 토큰 가져오기
+            const token = cookie.load('token');
+
+            if (token) {
+                // 토큰을 서버에 보내서 로그인한 사용자의 uuid를 받아옴
+                const uuidResponse = await axios.post('/api/member/loginCookie', { token });
+                const userUuid = uuidResponse.data.uuid;
+
+                setUserUuid(userUuid); // uuid를 상태로 저장
+
+                // uuid를 사용하여 mtype을 가져옴
+                const mtypeResponse = await axios.post('/api/member/searchMtype', { uuid: userUuid }); // POST 요청 본문에 uuid 전달
+                setMtype(mtypeResponse.data); // 서버에서 mtype만 반환하도록 기대
+                console.log("mtype Response:", mtypeResponse.data);
+            } else {
+                console.error("토큰이 존재하지 않습니다.");
+            }
+        } catch (error) {
+            console.error("mtype 조회 중 오류 발생:", error);
+        }
+    };
 
     // 챌린지 랭킹
     useEffect(() => {
@@ -198,7 +229,7 @@ const ChallengeList = () => {
                     </div>
                 </div>
 
-                {currentUuid === 'admin' && (
+                {mtype === 'a' && (
                     <div className="li_top_sch af">
                         <Link to={'/ChallengeInsert'} className="sch_bt2 wi_au">글쓰기</Link>
                     </div>

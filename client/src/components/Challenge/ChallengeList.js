@@ -8,88 +8,63 @@ const ChallengeList = () => {
     const [challenges, setChallenges] = useState([]); // 전체 챌린지 목록
     const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 번호
     const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수
-    const [currentUuid, setCurrentUuid] = useState(''); // 현재 로그인한 사용자의 UUID
-    const itemsPerPage = 3; // 페이지당 항목 수
-    const [keyword, setKeyword] = useState('');
-    const [searchtype, setSearchtype] = useState('');
-    const [rankingData, setRankingData] = useState('');
     const [mtype, setMtype] = useState('');
-    const [userUuid, setUserUuid] = useState('');
+    const [rankingData, setRankingData] = useState('');
+    const [searchtype, setSearchtype] = useState('');
+    const [keyword, setKeyword] = useState('');
+    const itemsPerPage = 3; // 페이지당 항목 수
 
-    useEffect(() => {
-        const token = cookie.load('token'); // 쿠키에서 토큰 가져오기
-        if (token) {
-            axios.post('/api/member/loginCookie', { token })
-                .then(response => setCurrentUuid(response.data.uuid))
-                .catch(error => console.error('토큰에서 아이디를 읽어올 수 없습니다:', error));
-        }
-        fetchChallenges();
-        fetchMainChallenges();
-    }, [searchtype, keyword, currentPage]);
-
-    useEffect(() => {
-        console.log("Updated mtype:", mtype);
-    }, [mtype]);
-
-     // mtype을 가져오는 함수
-     const fetchMtype = async () => {
+    // 로그인한 사용자 정보를 가져오는 함수
+    const fetchUserInfo = async () => {
         try {
-            // 쿠키에서 토큰 가져오기
             const token = cookie.load('token');
-
             if (token) {
-                // 토큰을 서버에 보내서 로그인한 사용자의 uuid를 받아옴
-                const uuidResponse = await axios.post('/api/member/loginCookie', { token });
-                const userUuid = uuidResponse.data.uuid;
+                const response = await axios.post('/api/member/loginCookie', { token });
+                const uuid = response.data.uuid;
 
-                setUserUuid(userUuid); // uuid를 상태로 저장
-
-                // uuid를 사용하여 mtype을 가져옴
-                const mtypeResponse = await axios.post('/api/member/searchMtype', { uuid: userUuid }); // POST 요청 본문에 uuid 전달
-                setMtype(mtypeResponse.data); // 서버에서 mtype만 반환하도록 기대
-                console.log("mtype Response:", mtypeResponse.data);
+                // 회원타입 가져오기
+                const mtypeResponse = await axios.post('/api/member/searchMtype', { uuid });
+                setMtype(mtypeResponse.data || '');
             } else {
-                console.error("토큰이 존재하지 않습니다.");
+                console.error("토큰이 없습니다.");
             }
         } catch (error) {
-            console.error("mtype 조회 중 오류 발생:", error);
+            console.error("사용자 정보를 가져오는 중 오류 발생: ", error);
         }
     };
 
-    // 챌린지 랭킹
-    useEffect(() => {
-        // 댓글 수 상위 3명의 데이터를 가져오는 API 호출
-        axios.get('/api/challenge/ranking')
-            .then(response => {
-                console.log(response.data); // rankingData 확인용 로그 추가
-                if (Array.isArray(response.data)) {
-                    setRankingData(response.data);
-                } else if (response.data.rankingList) { // 예시로 rankingList라는 키에 배열이 있다고 가정
-                    setRankingData(response.data.rankingList);
-                }
-                // setRankingData(response.data);
-            })
-            .catch(error => console.error('Error fetching ranking data:', error));
-    }, []);
-
-
-
-    // 챌린지 목록 및 전체 페이지 수 설정
-    const fetchChallenges = () => {
-        axios.get(`/api/challenge/challengeList?searchType=${searchtype}&keyword=${keyword}`)
-            .then(response => {
-                const fetchedChallenges = response.data.clist;
-                console.log(fetchedChallenges); // 데이터가 모두 불러와지는지 확인
-                // 최신 순으로 정렬
-                const sortedChallenges = fetchedChallenges.sort((a, b) => new Date(b.wdate) - new Date(a.wdate));
-                setChallenges(sortedChallenges);
-                setTotalPages(Math.ceil(sortedChallenges.length / itemsPerPage));
-            })
-            .catch(error => console.error('챌린지 목록을 가져오는 중 오류:', error));
+    // 챌린지 목록 가져오기
+    const fetchChallenges = async () => {
+        try {
+            const response = await axios.get(`/api/challenge/challengeList?searchType=${searchtype}&keyword=${keyword}`);
+            const fetchedChallenges = response.data.clist || [];
+            const sortedChallenges = fetchedChallenges.sort((a, b) => new Date(b.wdate) - new Date(a.wdate)); // 최신순 정렬
+            setChallenges(sortedChallenges);
+            setTotalPages(Math.ceil(sortedChallenges.length / itemsPerPage));
+        } catch (error) {
+            console.error("챌린지 목록을 가져오는 중 오류:", error);
+        }
     };
 
-    // 오늘의 챌린지
-    const challengeListAppend = () => {
+    // 챌린지 랭킹 데이터 가져오기
+    const fetchRankingData = async () => {
+        try {
+            const response = await axios.get('/api/challenge/ranking');
+            setRankingData(response.data || []);
+        } catch (error) {
+            console.error("랭킹 데이터를 가져오는 중 오류:", error);
+        }
+    };
+
+    // 최초 로드 시 데이터 가져오기
+    useEffect(() => {
+        fetchUserInfo();
+        fetchChallenges();
+        fetchRankingData();
+    }, [searchtype, keyword, currentPage]);
+
+    // 오늘의 챌린지 목록 렌더링
+    const renderChallengeList = () => {
         const startIdx = (currentPage - 1) * itemsPerPage;
         const currentChallenges = challenges.slice(startIdx, startIdx + itemsPerPage);
 
@@ -115,9 +90,9 @@ const ChallengeList = () => {
         });
     };
 
-    // 랭킹 함수
-    const challengeRankingAppend = () => {
-        if (!rankingData || !Array.isArray(rankingData) || rankingData.length === 0) {
+    // 랭킹 목록 렌더링
+    const renderRankingList = () => {
+        if (!rankingData.length) {
             return (
                 <tr>
                     <td colSpan="5">데이터가 없습니다.</td>
@@ -154,7 +129,8 @@ const ChallengeList = () => {
         fetchChallenges(); // 검색결과 즉시 반영
     };
 
-    const renderSearchPagination = () => {
+    // 페이지네이션 렌더링
+    const renderPagination = () => {
         const pageNumbers = [];
         const pagesToShow = 5; // 한 번에 보여줄 페이지 수
 
@@ -222,10 +198,10 @@ const ChallengeList = () => {
                         </tr>
                     </table>
                     <table id="appendChallengeList" className="table_ty2 ad_tlist">
-                        {challengeListAppend()}
+                        {renderChallengeList()}
                     </table>
                     <div id="spaging">
-                        {renderSearchPagination()}
+                        {renderPagination()}
                     </div>
                 </div>
 
@@ -251,7 +227,7 @@ const ChallengeList = () => {
                             </tr>
                         </thead>
                         <tbody id="appendChallengeRanking" className="table_ty2 ad_tlist2" style={{ marginTop: '10px' }}>
-                            {challengeRankingAppend()}
+                            {renderRankingList()}
                         </tbody>
                     </table>
                 </div>

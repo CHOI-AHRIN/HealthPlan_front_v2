@@ -103,11 +103,11 @@ const Header = () => {
                                     홈
                                 </Link>
                             </li>
-                            {/* <li className={`menulist ${window.location.pathname === '/' ? 'active' : ''}`}>
+                            <li className={`menulist ${window.location.pathname === '/' ? 'active' : ''}`}>
                                 <Link to={'/'} onClick={() => handleMenuClick('/')}>
-                                    커뮤니티
+                                    Spot
                                 </Link>
-                            </li> */}
+                            </li>
                             <li className={`menulist ${window.location.pathname === '/ChallengeList' ? 'active' : ''}`}>
                                 <Link to={'/ChallengeList'} onClick={() => handleMenuClick('/ChallengeList')}>
                                     챌린지

@@ -102,7 +102,7 @@ const ChallengeList = () => {
         return rankingData.map((data, index) => (
             <tr key={`${data.MNO}-${index}`}>
                 <td>{index + 1}</td> {/* 순위 */}
-                <td>{data.MNO}</td> {/* 회원번호 */}
+                {/* <td>{data.MNO}</td> */} {/* 회원번호 */}
                 <td>{data.UUID}</td> {/* 아이디 */}
                 <td>{data.NAME}</td> {/* 이름 */}
                 <td>{data.COMMENTCOUNT}</td> {/* 인증수 (댓글 수) */}
@@ -219,11 +219,11 @@ const ChallengeList = () => {
                     <table className="table_ty1 ad_tlist2">
                         <thead>
                             <tr>
-                                <th>순위</th>
-                                <th>회원번호</th>
+                                <th style={{ width: '100px' }}>순위</th>
+                                {/* <th>회원번호</th> */}
                                 <th>아이디</th>
                                 <th>이름</th>
-                                <th>인증수</th>
+                                <th style={{ width: '100px' }}>인증수</th>
                             </tr>
                         </thead>
                         <tbody id="appendChallengeRanking" className="table_ty2 ad_tlist2" style={{ marginTop: '10px' }}>

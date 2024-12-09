@@ -73,6 +73,7 @@ const ChallengeRead = (props) => {
         const maskedPart = '*'.repeat(userUuid.length - 3); // 나머지 부분 *
         return visiblePart + maskedPart;
     };
+    
 
     useEffect(() => {
         console.log("uuidMap이 업데이트되었습니다:", uuidMap);

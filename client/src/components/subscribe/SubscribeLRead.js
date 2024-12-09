@@ -253,7 +253,7 @@ const SubscribeLRead = (props) => {
         console.log("현재 uuid:", uuid);
         console.log("현재 mno:", mno);
 
-        
+
         const reply_checker = $('#replyTextVal').val();
 
         const fnValidate = (e) => {
@@ -343,7 +343,7 @@ const SubscribeLRead = (props) => {
                             <p style={{ fontSize: '19px' }}>
                                 {/*  {data.userUuid} */}{/* {' '} */}
                                 {data.mno}  |  {uuidMap[data.mno] ? uuidMap[data.mno] : '아이디 누락'} {/* uuid 표시 */}
-                               
+
                                 <span style={{ fontSize: '12px' }}>
                                     {/* {formattedDate} */}
                                     {/*  {data.modidate && ( */}
@@ -467,7 +467,7 @@ const SubscribeLRead = (props) => {
                                             </ul>
                                         </td>
                                     </tr>*/}
-                                    <tr> 
+                                    <tr>
                                         <th>
                                             <label for="title">강의제목</label>
                                         </th>
@@ -579,28 +579,36 @@ const SubscribeLRead = (props) => {
 
                             <table class="table_ty1">
                                 <tr style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                    <th style={{ marginRight: '10px' }}>
+                                    {/* <th style={{ marginRight: '10px' }}>
                                         <label for="mno">회원번호</label>
-                                    </th>
-                                    <td style={{ flex: '1', marginRight: '10px' }}>
-                                        <input type="text" name="mno" id="rmno" readOnly="readonly" value={userMno} style={{ width: '100%' }} />
+                                    </th> */}
+                                    <td style={{ flex: '1', marginRight: '10px', display: 'none' }}>
+                                        <input type="text" name="mno" id="rmno" readOnly="readonly" value={userMno} style={{ width: '100%', display: 'none' }} />
                                     </td>
-
-                                    <th style={{ marginLeft: '20px' }}>
+                                </tr>
+                                {/* <th style={{ marginLeft: '20px' }}>
                                         <label for="replyer">작성자</label>
                                     </th>
                                     <td style={{ flex: '1', marginRight: '10px' }}>
                                         <input type="text" name="replyer" id="replyerVal" readOnly="readonly" value={uuid} style={{ width: '100%' }} />
                                     </td>
-                                </tr>
+                                 */}
+
+                                <div class="comment-box">
+                                    <span class="replyer" name="replyer" id="replyerVal" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} > {uuid}</span>
+                                    <textarea class="comment-input" name=" rcomment" id="replyTextVal" placeholder=" 댓글을 남겨보세요"></textarea>
+                                    <div class="comment-actions">
+                                        <a href="javascript:" className="bt_ty1 bt_ty3 submit_ty1 saveclass" onClick={(e) => submitClick(e)}>등록</a>
+                                    </div>
+                                </div>
                             </table>
-                            <tr>
+                            {/*                             <tr>
                                 <td style={{ display: 'flex', alignItems: 'center' }}>
                                     <label for="rcomment" style={{ marginRight: '135px' }}>댓글</label>
                                     <input type="text" name=" rcomment" id="replyTextVal" placeholder='내용을 입력해주세요.' style={{ flex: '1', marginRight: '8px', height: '50px' }} />
                                     <a href="javascript:" className="bt_ty1 bt_ty3 submit_ty1 saveclass" onClick={(e) => submitClick(e)}>등록</a>
                                 </td>
-                            </tr>
+                            </tr> */}
                         </table>
                     </form>
                     <div id='replyarea'>

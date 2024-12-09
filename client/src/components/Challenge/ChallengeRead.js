@@ -49,10 +49,8 @@ const ChallengeRead = (props) => {
                     setUuid(userUuid);
                     // 회원 번호(mno)를 가져오기 위해 추가 요청
                     axios.post('/api/member/readMno', { uuid: userUuid })
-                    axios.post('/api/member/readName', { uuid, userUuid })
                         .then(response => {
                             setMno(response.data.mno); // 회원 번호 상태 업데이트
-                            setName(response.data.name);
                             callChallengeInfoApi(userUuid); // 받아온 UUID를 기반으로 게시글 정보 요청
                         })
                         .catch(error => {
@@ -64,6 +62,17 @@ const ChallengeRead = (props) => {
                 });
         }
     }, [bno]);
+
+    // 아이디 마스킹 함수
+    const maskUserId = (userUuid) => {
+        if (!userUuid || userUuid.length <= 3) {
+            // 아이디가 3자리 이하일 경우 전체를 *
+            return '*'.repeat(userUuid.length);
+        }
+        const visiblePart = userUuid.slice(0, 3); // 앞 3자리
+        const maskedPart = '*'.repeat(userUuid.length - 3); // 나머지 부분 *
+        return visiblePart + maskedPart;
+    };
 
     useEffect(() => {
         console.log("uuidMap이 업데이트되었습니다:", uuidMap);
@@ -377,6 +386,8 @@ const ChallengeRead = (props) => {
         for (let i = 0; i < replyList.length; i++) {
             let data = replyList[i]
             const isCurrentUserCommentOwner = true; // 작성자 여부 판단
+            const maskedUuid = uuidMap[data.mno] ? maskUserId(uuidMap[data.mno]) : '아이디 누락'; // 마스킹된 UUID
+
             result.push(
                 <li key={data.rno} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '19px' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -385,8 +396,7 @@ const ChallengeRead = (props) => {
                         </div>
                         <div className="cat">
                             <p style={{ fontSize: '19px' }}>
-                                {data.name}  ({uuidMap[data.mno] ? uuidMap[data.mno] : '아이디 누락'}){/* uuid 표시 */}
-
+                                {data.name}  ({maskedUuid}) {/* uuid 표시 */}
                                 <span style={{ fontSize: '12px' }}>
                                     <span style={{ marginLeft: '5px', color: 'grey' }}>{/* (수정됨) */}</span>
                                     <span style={{ fontSize: '10px', color: 'grey' }}>
@@ -614,10 +624,10 @@ const ChallengeRead = (props) => {
                                 </tr>
                             </tr>
                             <div class="comment-box">
-                                <span class="replyer" name="replyer" id="replyerVal" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px'}} > {uuid}</span>
+                                <span class="replyer" name="replyer" id="replyerVal" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} > {uuid}</span>
                                 <textarea class="comment-input" name=" rcomment" id="replyTextVal" placeholder=" 댓글을 남겨보세요"></textarea>
                                 <div class="comment-actions">
-                                <a href="javascript:" className="bt_ty1 bt_ty3 submit_ty1 saveclass" onClick={(e) => submitClick(e)}>등록</a>
+                                    <a href="javascript:" className="bt_ty1 bt_ty3 submit_ty1 saveclass" onClick={(e) => submitClick(e)}>등록</a>
                                 </div>
                             </div>
                         </table>

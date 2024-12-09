@@ -66,6 +66,19 @@ const SubscribeLRead = (props) => {
     }, [uuidMap, responseReplyList]);  // uuidMap이 변경될 때마다 댓글 목록을 다시 렌더링
 
 
+    // 아이디 마스킹 함수
+    // 전달받은 값을 매개변수로 쓴다! / userUuid로 할당됨!
+    const maskUserId = (userUuid) => {
+        if (!userUuid || userUuid.length <= 3) {
+            // 아이디가 3자리 이하일 경우 전체를 *
+            return '*'.repeat(userUuid.length);
+        }
+        const visiblePart = userUuid.slice(0, 3); // 앞 3자리
+        const maskedPart = '*'.repeat(userUuid.length - 3); // 나머지 부분 *
+        return visiblePart + maskedPart;
+    };
+
+
     // 2. 댓글 목록에서 mno로 uuid 가져오기
     useEffect(() => {
 
@@ -329,6 +342,7 @@ const SubscribeLRead = (props) => {
         for (let i = 0; i < replyList.length; i++) {
             let data = replyList[i]
             const isCurrentUserCommentOwner = true; // 작성자 여부 판단
+            const maskedUuid = uuidMap[data.mno] ? maskUserId(uuidMap[data.mno]) : '아이디 누락'; // 마스킹된 UUID
             console.log("댓글에서 보여줄 내용:", data); // 댓글 목록 확인
 
             console.log("uuidMap 확인:", uuidMap);
@@ -341,8 +355,7 @@ const SubscribeLRead = (props) => {
                         </div>
                         <div className="cat">
                             <p style={{ fontSize: '19px' }}>
-                                {/*  {data.userUuid} */}{/* {' '} */}
-                                {data.mno}  |  {uuidMap[data.mno] ? uuidMap[data.mno] : '아이디 누락'} {/* uuid 표시 */}
+                                {data.name}  ({maskedUuid}) {/* uuid 표시 */}
 
                                 <span style={{ fontSize: '12px' }}>
                                     {/* {formattedDate} */}
@@ -579,21 +592,10 @@ const SubscribeLRead = (props) => {
 
                             <table class="table_ty1">
                                 <tr style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                    {/* <th style={{ marginRight: '10px' }}>
-                                        <label for="mno">회원번호</label>
-                                    </th> */}
                                     <td style={{ flex: '1', marginRight: '10px', display: 'none' }}>
                                         <input type="text" name="mno" id="rmno" readOnly="readonly" value={userMno} style={{ width: '100%', display: 'none' }} />
                                     </td>
                                 </tr>
-                                {/* <th style={{ marginLeft: '20px' }}>
-                                        <label for="replyer">작성자</label>
-                                    </th>
-                                    <td style={{ flex: '1', marginRight: '10px' }}>
-                                        <input type="text" name="replyer" id="replyerVal" readOnly="readonly" value={uuid} style={{ width: '100%' }} />
-                                    </td>
-                                 */}
-
                                 <div class="comment-box">
                                     <span class="replyer" name="replyer" id="replyerVal" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} > {uuid}</span>
                                     <textarea class="comment-input" name=" rcomment" id="replyTextVal" placeholder=" 댓글을 남겨보세요"></textarea>
@@ -602,13 +604,6 @@ const SubscribeLRead = (props) => {
                                     </div>
                                 </div>
                             </table>
-                            {/*                             <tr>
-                                <td style={{ display: 'flex', alignItems: 'center' }}>
-                                    <label for="rcomment" style={{ marginRight: '135px' }}>댓글</label>
-                                    <input type="text" name=" rcomment" id="replyTextVal" placeholder='내용을 입력해주세요.' style={{ flex: '1', marginRight: '8px', height: '50px' }} />
-                                    <a href="javascript:" className="bt_ty1 bt_ty3 submit_ty1 saveclass" onClick={(e) => submitClick(e)}>등록</a>
-                                </td>
-                            </tr> */}
                         </table>
                     </form>
                     <div id='replyarea'>

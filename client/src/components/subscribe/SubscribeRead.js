@@ -64,6 +64,18 @@ const SubscribeLRead = (props) => {
     }, [uuidMap]);  // uuidMap이 변경될 때마다 댓글 목록을 다시 렌더링
 
 
+    // 아이디 마스킹 함수
+    // 전달받은 값을 매개변수로 쓴다! / userUuid로 할당됨!
+    const maskUserId = (userUuid) => {
+        if (!userUuid || userUuid.length <= 3) {
+            // 아이디가 3자리 이하일 경우 전체를 *
+            return '*'.repeat(userUuid.length);
+        }
+        const visiblePart = userUuid.slice(0, 3); // 앞 3자리
+        const maskedPart = '*'.repeat(userUuid.length - 3); // 나머지 부분 *
+        return visiblePart + maskedPart;
+    };
+
     // 2. 댓글 목록에서 mno로 uuid 가져오기
     useEffect(() => {
 
@@ -133,7 +145,7 @@ const SubscribeLRead = (props) => {
 
     // 3. 게시글 작성자와 로그인한 사용자의 UUID가 일치하면 수정/삭제 버튼을 보여줌
     const renderModifyDeleteButtons = () => {
-        if (uuid === writer || uuid === 'admin') {
+        if (uuid === writer || mtype === 'a') {
             return (
                 <div id="modifyButton" className="btn_confirm mt20" style={{ marginBottom: '44px', textAlign: 'center' }}>
                     <Link to={`/SubscribeUpdate/${sno}`} className="bt_ty bt_ty2 submit_ty1 saveclass">수정</Link>
@@ -287,18 +299,17 @@ const SubscribeLRead = (props) => {
             return <li>댓글이 없습니다.</li>;
         }
         let result = []
-        // const currentUser = '111';
 
         for (let i = 0; i < replyList.length; i++) {
             let data = replyList[i]
             const isCurrentUserCommentOwner = true;
+            const maskedUuid = uuidMap[data.mno] ? maskUserId(uuidMap[data.mno]) : '아이디 누락'; // 마스킹된 UUID
 
             console.log("댓글에서 보여줄 내용:", data); // 댓글 목록 확인
 
             console.log("uuidMap 확인:", uuidMap);
             console.log("현재 mno 확인:", data.mno);
-            // const isCurrentUserCommentOwner = data.replyer === currentUser;
-            // const formattedDate = moment(data.regdate).fromNow();
+
 
             result.push(
                 <li key={data.rno} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '19px' }}>
@@ -308,9 +319,8 @@ const SubscribeLRead = (props) => {
                         </div>
                         <div className="cat">
                             <p style={{ fontSize: '19px' }}>
-                                {/* {data.replyer} */}
-                                {data.mno} | {uuidMap[data.mno] ? uuidMap[data.mno] : '아이디 누락'} {/* uuid 표시 */}
-                               
+                                {data.name} ({maskedUuid})
+
                                 <span style={{ fontSize: '12px' }}>
                                     <span style={{ marginLeft: '5px', color: 'grey' }}></span>
                                     <span style={{ fontSize: '10px', color: 'grey' }}></span>
@@ -514,29 +524,19 @@ const SubscribeLRead = (props) => {
                                 </td>
                             </tr>
                             <tr id='replyerDiv'>
-                                    <tr style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                        <th style={{ marginRight: '10px' }}>
-                                            <label for="mno">회원번호</label>
-                                        </th>
-                                        <td style={{ flex: '1', marginRight: '10px' }}>
-                                            <input type="text" name="mno" id="mno" readOnly="readonly" value={mno} style={{ width: '100%' }} />
-                                        </td>
-
-                                        <th style={{ marginLeft: '20px' }}>
-                                            <label for="replyer">작성자</label>
-                                        </th>
-                                        <td style={{ flex: '1', marginRight: '10px' }}>
-                                            <input type="text" name="replyer" id="replyerVal" readOnly="readonly" value={uuid} style={{ width: '100%' }} />
-                                        </td>
-                                    </tr>
+                                <tr style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                    <td style={{ flex: '1', marginRight: '10px', display: 'none' }}>
+                                        <input type="text" name="mno" id="mno" readOnly="readonly" value={mno} style={{ width: '100%', display: 'none' }} />
+                                    </td>
+                                </tr>
                             </tr>
-                            <tr>
-                                <td style={{ display: 'flex', alignItems: 'center' }}>
-                                    <label for="rcomment" style={{ marginRight: '135px' }}>댓글</label>
-                                    <input type="text" name="rcomment" id="replyTextVal" placeholder='내용을 입력해주세요.' style={{ flex: '1', marginRight: '8px', height: '50px' }} />
+                            <div class="comment-box">
+                                <span class="replyer" name="replyer" id="replyerVal" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} > {uuid}</span>
+                                <textarea class="comment-input" name=" rcomment" id="replyTextVal" placeholder=" 댓글을 남겨보세요"></textarea>
+                                <div class="comment-actions">
                                     <a href="javascript:" className="bt_ty1 bt_ty3 submit_ty1 saveclass" onClick={(e) => submitClick(e)}>등록</a>
-                                </td>
-                            </tr>
+                                </div>
+                            </div>
                         </table>
                     </form>
                     <div id='replyarea'>

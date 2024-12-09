@@ -31,6 +31,7 @@ const ChallengeRead = (props) => {
     const [point, setPoint] = useState(''); // 포인트 적립
     const [Puuid, setPuuid] = useState(''); // 댓글 작성자 아이디
     const [psource, setPsource] = useState(''); // 포인트 적립 사유
+    const [name, setName] = useState('');
 
 
     const [uuidMap, setUuidMap] = useState({}); // mno와 uuid 매핑을 저장
@@ -48,8 +49,10 @@ const ChallengeRead = (props) => {
                     setUuid(userUuid);
                     // 회원 번호(mno)를 가져오기 위해 추가 요청
                     axios.post('/api/member/readMno', { uuid: userUuid })
+                    axios.post('/api/member/readName', { uuid, userUuid })
                         .then(response => {
                             setMno(response.data.mno); // 회원 번호 상태 업데이트
+                            setName(response.data.name);
                             callChallengeInfoApi(userUuid); // 받아온 UUID를 기반으로 게시글 정보 요청
                         })
                         .catch(error => {
@@ -382,7 +385,7 @@ const ChallengeRead = (props) => {
                         </div>
                         <div className="cat">
                             <p style={{ fontSize: '19px' }}>
-                                {data.mno} | {uuidMap[data.mno] ? uuidMap[data.mno] : '아이디 누락'} {/* uuid 표시 */}
+                                {data.name}  ({uuidMap[data.mno] ? uuidMap[data.mno] : '아이디 누락'}){/* uuid 표시 */}
 
                                 <span style={{ fontSize: '12px' }}>
                                     <span style={{ marginLeft: '5px', color: 'grey' }}>{/* (수정됨) */}</span>
@@ -602,28 +605,21 @@ const ChallengeRead = (props) => {
                             </tr>
                             <tr id='replyerDiv'>
                                 <tr style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                    <th style={{ marginRight: '10px' }}>
+                                    <th style={{ marginRight: '10px', display: 'none' }}>
                                         <label for="mno">회원번호</label>
                                     </th>
-                                    <td style={{ flex: '1', marginRight: '10px' }}>
-                                        <input type="text" name="mno" id="mno" readOnly="readonly" value={mno} style={{ width: '100%' }} />
-                                    </td>
-
-                                    <th style={{ marginLeft: '20px' }}>
-                                        <label for="replyer">작성자</label>
-                                    </th>
-                                    <td style={{ flex: '1', marginRight: '10px' }}>
-                                        <input type="text" name="replyer" id="replyerVal" readOnly="readonly" value={uuid} style={{ width: '100%' }} />
+                                    <td style={{ flex: '1', marginRight: '10px', display: 'none' }}>
+                                        <input type="hidden" name="mno" id="mno" readOnly="readonly" value={mno} style={{ width: '100%' }} />
                                     </td>
                                 </tr>
                             </tr>
-                            <tr>
-                                <td style={{ display: 'flex', alignItems: 'center' }}>
-                                    <label for="rcomment" style={{ marginRight: '135px' }}>댓글</label>
-                                    <input type="text" name=" rcomment" id="replyTextVal" placeholder='내용을 입력해주세요.' style={{ flex: '1', marginRight: '8px', height: '50px' }} />
-                                    <a href="javascript:" className="bt_ty1 bt_ty3 submit_ty1 saveclass" onClick={(e) => submitClick(e)}>등록</a>
-                                </td>
-                            </tr>
+                            <div class="comment-box">
+                                <span class="replyer" name="replyer" id="replyerVal" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px'}} > {uuid}</span>
+                                <textarea class="comment-input" name=" rcomment" id="replyTextVal" placeholder=" 댓글을 남겨보세요"></textarea>
+                                <div class="comment-actions">
+                                <a href="javascript:" className="bt_ty1 bt_ty3 submit_ty1 saveclass" onClick={(e) => submitClick(e)}>등록</a>
+                                </div>
+                            </div>
                         </table>
                     </form>
                     <div id='replyarea'>

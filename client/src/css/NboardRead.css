@@ -45,3 +45,30 @@
   gap: 10px; /* 버튼 간격 */
   align-items: center; /* 버튼 높이를 맞춤 */
 }
+
+/** 아린 추가 댓글 **/
+.comment-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-input {
+  border: none;
+  resize: none;
+  height: 100px !important;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: flex-end; /* 버튼을 왼쪽으로 정렬 */
+  float: right;
+}
+

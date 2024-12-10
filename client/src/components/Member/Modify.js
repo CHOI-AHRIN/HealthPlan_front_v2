@@ -12,17 +12,33 @@ const Modify = () => {
     const [email, setEmail] = useState('');
     const [mno, setMno] = useState('');
     const [phone, setPhone] = useState('');
+    const [authCode, setAuthCode] = useState('');
 
     const [isEditingEmail, setIsEditingEmail] = useState(false);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
-
     const [isEditingEmailOpen, setIsEditingEmailOpen] = useState(false);
+
+    const [initialEmail, setInitialEmail] = useState(''); // 초기 이메일 상태
+
+
 
 
     useEffect(() => {
         callModifyInfoApi();
     }, []);
 
+
+    // 이메일 마스킹 함수
+    const maskEmail = (email) => {
+        if (!email || !email.includes('@')) {
+            return '알 수 없음';
+        }
+        const [localPart, domainPart] = email.split('@'); // 로컬과 도메인 분리
+        const maskedLocalPart = localPart.slice(0, 2) + '*'.repeat(localPart.length - 2);
+        const [domainName, domainExt] = domainPart.split('.'); // 도메인 이름과 확장자 분리
+        const maskedDomain = domainName.slice(0, 1) + '*'.repeat(domainName.length - 1);
+        return `${maskedLocalPart}@${maskedDomain}.${domainExt}`;
+    };
 
     const callModifyInfoApi = () => {
 
@@ -198,13 +214,16 @@ const Modify = () => {
     // 모달 닫기
     const closeModal = () => {
         setIsEditingEmailOpen(false);
-        // setSelectedImage('');
     };
 
     // 이메일 수정
-    const handleEmailChange = (email) => {
-        axios.post('/api/mail', {email});
-    }
+    const handleEmailChange = (e) => {
+        // 이메일 변경 요청
+        axios.post('/api/member/modiEmail', { email, uuid }).then(() => {
+            Swal.fire('이메일 변경 완료', '이메일이 성공적으로 변경되었습니다.', 'success');
+        });
+    };
+
 
 
     const sweetalert = (title, contents, icon, confirmButtonText) => {
@@ -337,9 +356,10 @@ const Modify = () => {
                                         <tr>
                                             <th>* 이메일</th>
                                             <td>
-                                                <input id="email_val" type="text" name="email" />
+                                                <input id="email_val" type="text" name="email" value={email ? maskEmail(email) : '정보 없음'} />
                                             </td>
-                                            <button className="btn-modi" onclick={emailCk()}>수정</button>
+                                            <button type="button" className="btn-modi" onClick={() => setIsEditingEmailOpen(true)}>수정</button>
+
                                         </tr>
                                         <tr>
                                             <th>* 새 비밀번호</th>
@@ -433,8 +453,9 @@ const Modify = () => {
 
                             <Modal
                                 isOpen={isEditingEmailOpen}
-                                onRequestClose={closeModal}
-                                contentLabel="비밀번호 확인"
+                                //onRequestClose={() => { }} // 외부 클릭으로 닫히지 않도록 비활성화
+                                onRequestClose={() => console.log('모달 닫힘 방지')}
+                                contentLabel="이메일 인증"
                                 style={{
                                     content: {
                                         top: '50%',
@@ -443,19 +464,93 @@ const Modify = () => {
                                         bottom: 'auto',
                                         marginRight: '-50%',
                                         transform: 'translate(-50%, -50%)',
-                                        width: '400px',
+                                        width: '500px',
+                                        height: '500px',
+                                        alingItems: 'center',
                                     },
                                 }}
                             >
-                                <h2>비밀번호 확인</h2>
-                                <p>회원 탈퇴를 위해 비밀번호를 입력해주세요.</p>
-                                <input
-                                    type="text"
-                                    value={email}
-                                    onChange={handleEmailChange}
-                                    placeholder="비밀번호 입력"
-                                    style={{ width: '100%', padding: '10px', marginTop: '10px' }}
-                                />
+
+                                <img
+                                    style={{ width: '70px' }}
+                                    src={require(`../../img/main/email.png`)}
+                                    alt="메일 이미지" />
+                                <h2 style={{ marginBottom: '20px', marginTop: '10px' }}>이메일 인증 절차</h2>
+
+                                <p style={{ marginBottom: '20px' }}> <b>{name}님</b>의 회원정보 중 <b>이메일</b>을 수정하기 위해서는 인증 절차가 필요합니다.</p>
+
+                                <hr />
+
+                                <h3 style={{ marginTop: '20px', textAling: 'center', marginBottom: '10px' }}>{maskEmail(initialEmail)}</h3>
+
+                                {/* 이메일이 수정 상태가 아닐 때 렌더링 | 기존 이메일 확인 단계 */}
+                                {!isEditingEmail &&
+                                    <div>
+                                        <input
+                                            type="text"
+                                            // value={email}
+                                            onChange={(e) => {
+                                                e.preventDefault(); // 기본 동작 방지
+                                                setEmail(e.target.value)
+                                                console.log('입력 값:', e.target.value); // 디버깅용 로그
+                                            }} // 입력값 업데이트
+                                            placeholder="기존 이메일을 입력해주세요"
+                                            style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                // 서버로 기존 이메일 확인 요청
+                                                axios
+                                                    .post('/api/member/emailCk', { email })
+                                                    .then((response) => {
+                                                        if (response.data === 0) {
+                                                            Swal.fire('확인 성공', '기존 이메일이 확인되었습니다.', 'success');
+                                                            setIsEditingEmail(true); // 다음 단계로 진행
+                                                        } else {
+                                                            Swal.fire('오류', '입력하신 이메일이 일치하지 않습니다.', 'error');
+                                                        }
+                                                    })
+                                                    .catch(() => {
+                                                        Swal.fire('오류', '이메일 확인 중 문제가 발생했습니다.', 'error');
+                                                    });
+                                            }}
+                                            style={{ padding: '10px 20px', marginTop: '10px' }}>확인</button> {/* 확인버튼 누르면 기존 이메일과 일치하는지 확인 --> '/api/member/emailCk' */}
+                                    </div>
+                                }{/** 이메일이 수정 상태일 때 렌더링 | 이메일 변경 및 인증번호 확인 단계 */}
+
+                                {isEditingEmail &&
+                                    <div>
+                                        <div>
+                                            <input
+                                                type="text"
+                                                placeholder="변경할 이메일을 입력해주세요"
+                                                onChange={(e) => {
+                                                    e.preventDefault(); // 기본 동작 방지
+                                                    setEmail(e.target.value);
+                                                    console.log('변경할 이메일:', e.target.value); // 디버깅용 로그
+                                                }}
+                                                style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+                                            />
+                                            <button type="button"
+                                                onClick={() => {
+                                                    // 서버로 이메일 인증번호 요청
+                                                    axios.post('/api/mail', { email }).then(() => {
+                                                        Swal.fire('인증번호 발송 완료', '입력하신 이메일로 인증번호가 발송되었습니다.', 'success');
+                                                    });
+                                                }}
+                                                style={{ padding: '10px 20px', marginTop: '10px' }}>인증</button> {/* 인증버튼 누르면 이메일로 인증번호 발송 --> '/api/mail' */}
+                                        </div>
+
+                                        <div>
+                                            <input
+                                                type="text"
+                                                placeholder="인증번호 입력"
+                                                style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+                                            />
+                                        </div>
+                                    </div>
+                                }
                                 <div style={{ marginTop: '20px', textAlign: 'right' }}>
                                     <button
                                         onClick={closeModal}
@@ -467,7 +562,7 @@ const Modify = () => {
                                         onClick={handleEmailChange}
                                         style={{ padding: '10px 20px', backgroundColor: '#d9534f', color: '#fff' }}
                                     >
-                                        확인
+                                        변경
                                     </button>
                                 </div>
                             </Modal>

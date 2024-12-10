@@ -6,7 +6,7 @@
 .name-container {
   display: flex;
   align-items: center;
-  
+
 }
 
 .name-container input {
@@ -19,14 +19,17 @@
 }
 
 .name-container button {
- 
+
   padding-left: 15px;
   padding-right: 15px;
-  white-space: nowrap; /* 텍스트가 한 줄로만 표시되도록 설정 */
-  writing-mode: horizontal-tb; /* 텍스트를 가로로 표시 */
-  transform: rotate(0deg); /* 텍스트를 가로로 표시 */
-  
-  background-color: #006eff; 
+  white-space: nowrap;
+  /* 텍스트가 한 줄로만 표시되도록 설정 */
+  writing-mode: horizontal-tb;
+  /* 텍스트를 가로로 표시 */
+  transform: rotate(0deg);
+  /* 텍스트를 가로로 표시 */
+
+  background-color: #006eff;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -35,14 +38,25 @@
 }
 
 .name-container button:hover {
-  background-color: #006eff;  
+  background-color: #006eff;
 }
 
 
 .btn-modi {
   width: 70px;
   justify-content: center;
-  background-color: #006eff; 
+  background-color: #006eff;
+  border-radius: 4px;
+  color: #fff;
+  margin-top: 20px;
+  margin-left: 10px;  /* 버튼과 텍스트 사이 간격 */
+  line-height: 40px;  /* 버튼 텍스트의 수직 정렬 */
+}
+
+.btn-modi2 {
+  width: 100px;
+  justify-content: center;
+  background-color: #006eff;
   border-radius: 4px;
   color: #fff;
   margin-top: 20px;

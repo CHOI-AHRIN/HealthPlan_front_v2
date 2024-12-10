@@ -9,13 +9,15 @@
 
 # 📂 프로젝트 수행일정
 기업 초청 프로젝트 발표회의 피드백을 기반으로 프로젝트를 업그레이드 하는 중입니다.
-<br /> 이전 버전의 프로젝트가 궁금하다면! 🔗[📕BE|HealthPlan](https://github.com/CHOI-AHRIN/HealthPlan) [📕FE|HealthPlan](https://github.com/CHOI-AHRIN/HealthPlan_front)
+<br /> 이전 버전의 프로젝트가 궁금하다면! 🔗[📕[BE]HealthPlan](https://github.com/CHOI-AHRIN/HealthPlan) [📕[FE]HealthPlan](https://github.com/CHOI-AHRIN/HealthPlan_front)
+<br /> 💡 개발현황이 궁금하다면! 🔗[📆개발일지](https://github.com/CHOI-AHRIN/HealthPlan_v2/blob/master/src/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80.md)
 
 <br /> 
 
  ## 📆24.12.09(월) ~ 13(금)
-- [ ] 회원번호 숨김 처리 *( 이름(아이디) 표시하는데 아이디는 특정 몇 자리는 * 표시로 나오게 하기 )*
-- [ ] 이메일 수정 시 이메일 인증 API
+- [x] ~~회원번호 숨김 처리 *( 이름(아이디) 표시하는데 아이디는 특정 몇 자리는 * 표시로 나오게 하기 )*~~   `24. 12. 09`
+- [x] ~~운영자 권한을 줄 때, mtype을 이용할 수 있도록 수정하기~~   `24. 12. 10`
+- [ ] 이메일 수정 시 이메일 인증 API    `24. 12. 10` ~ `ing`
 - [ ] 회원탈퇴 -> BE 비밀번호 확인 로직, FE 모달 이용
 
 ##  📆24.12.16(월) ~ 20(금)

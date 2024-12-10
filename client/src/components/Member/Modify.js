@@ -318,6 +318,7 @@ const Modify = () => {
                                             <td>
                                                 <input id="email_val" type="text" name="email" />
                                             </td>
+                                            <button className="btn-modi" >수정</button>
                                         </tr>
                                         <tr>
                                             <th>* 새 비밀번호</th>

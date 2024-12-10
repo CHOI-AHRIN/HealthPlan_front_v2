@@ -14,7 +14,7 @@ const MyPage = () => {
     const [regdate, setRegdate] = useState('');
     const [sstype, setSstype] = useState('');
     const [pcount, setPcount] = useState('');
-    // const [appendCarList, setAppendCarList] = useState([]);
+
 
     const navigate = useNavigate();
 
@@ -37,42 +37,41 @@ const MyPage = () => {
 
 
 
-    const callMemberInfoApi = () => {
+    const callMemberInfoApi = async () => {
+        try {
+            // 1. 쿠키에서 토큰 가져오기
+            const token = cookie.load('token');
+            if (!token) {
+                alert("토큰이 없습니다. 로그인해주세요.");
+                return false;
+            }
 
-        // 1. 쿠키에서 토큰 가져오기 
-        const token = cookie.load('token');
+            // 2. token을 서버로 보내고 uuid를 받아오기
+            const { data: { uuid } } = await axios.post('/api/member/loginCookie', { token });
 
-        // 2. token을 서버로 보내고 uuid를 받아오기
-        axios
-            .post('/api/member/loginCookie', {
+            // 3. uuid로 회원 타입 가져오기
+            const { data: mtype } = await axios.post('/api/member/searchMtype', { uuid });
 
-                token: token
+            // 4. uuid로 회원 정보 조회
+            const { data } = await axios.post('/api/member/read', { uuid });
 
-            }).then(response => {
-
-                const uuid = response.data.uuid;
-
-                // 3. 받아온 데이터를 통해 정보 조회
-                axios.post('/api/member/read', {
-                    uuid: uuid // 받은 uuid를 다시 서버로 전송
-                }).then(response => {
-                    try {
-                        const data = response.data;
-                        setUuid(data.uuid);      // 회원 아이디
-                        setName(data.name);      // 회원 이름
-                        setEmail(data.email);    // 회원 이메일
-                        setMtype(data.mtype);    // 회원 타입
-                        setPhone(data.phone);    // 연락처
-                        setRegdate(formatDate(data.regdate)); // 가입 일자
-                        setMno(data.mno);        // 회원 번호
-                        setSstype(data.sstype);  // 구독 타입
-                        setPcount(data.pcount);  // 잔여 포인트
-                    } catch (error) {
-                        alert('회원데이터를 읽어오는 중에 오류가 발생했습니다.');
-                    }
-                }).catch(error => { alert('토큰을 확인하는 중에 오류가 발생했습니다.'); return false; });
-            })
+            // 5. 받아온 데이터로 상태 업데이트
+            setUuid(data.uuid); // 회원 아이디
+            setName(data.name); // 회원 이름
+            setEmail(data.email); // 회원 이메일
+            setMtype(data.mtype || mtype); // 회원 타입 (서버에서 mtype 없으면 searchMtype 결과 사용)
+            setPhone(data.phone); // 연락처
+            setRegdate(formatDate(data.regdate)); // 가입 일자
+            setMno(data.mno); // 회원 번호
+            setSstype(data.sstype); // 구독 타입
+            setPcount(data.pcount); // 잔여 포인트
+        } catch (error) {
+            console.error("회원 정보를 가져오는 중 오류 발생:", error);
+            alert("회원 정보를 불러오는 데 실패했습니다.");
+            return false;
+        }
     };
+
 
 
     const goToMemberList = () => {
@@ -108,9 +107,9 @@ const MyPage = () => {
 
                             <div className="re1_wrap">
                                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                    {uuid === 'admin' && (
+                                    {mtype === 'a' && (
                                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                            {uuid === 'admin' && (
+                                            {mtype === 'a' && (
                                                 <Link to="/MemberList" className="bt_ty2 submit_ty1" style={{
                                                     fontSize: '15px', width: '120px', height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex'
                                                 }}>

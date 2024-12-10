@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
 import $ from 'jquery';
+import React, { useEffect, useState } from 'react';
 import cookie from 'react-cookies';
 import Modal from 'react-modal';
+import Swal from 'sweetalert2';
 
 const Modify = () => {
 
@@ -15,6 +15,9 @@ const Modify = () => {
 
     const [isEditingEmail, setIsEditingEmail] = useState(false);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
+
+    const [isEditingEmailOpen, setIsEditingEmailOpen] = useState(false);
+
 
     useEffect(() => {
         callModifyInfoApi();
@@ -186,6 +189,24 @@ const Modify = () => {
     };
 
 
+    // 이메일 수정 모달!
+    const emailCk = () => {
+        setIsEditingEmailOpen(true); // 이메일 수정 모달 오픈
+
+    }
+
+    // 모달 닫기
+    const closeModal = () => {
+        setIsEditingEmailOpen(false);
+        // setSelectedImage('');
+    };
+
+    // 이메일 수정
+    const handleEmailChange = (email) => {
+        axios.post('/api/mail', {email});
+    }
+
+
     const sweetalert = (title, contents, icon, confirmButtonText) => {
         Swal.fire({
             title: title,
@@ -318,7 +339,7 @@ const Modify = () => {
                                             <td>
                                                 <input id="email_val" type="text" name="email" />
                                             </td>
-                                            <button className="btn-modi" >수정</button>
+                                            <button className="btn-modi" onclick={emailCk()}>수정</button>
                                         </tr>
                                         <tr>
                                             <th>* 새 비밀번호</th>
@@ -407,6 +428,49 @@ const Modify = () => {
                                     </button>
                                 </div>
                             </Modal> */}
+
+                            {/* ---------------------------------------------------------------------------------------------------- */}
+
+                            <Modal
+                                isOpen={isEditingEmailOpen}
+                                onRequestClose={closeModal}
+                                contentLabel="비밀번호 확인"
+                                style={{
+                                    content: {
+                                        top: '50%',
+                                        left: '50%',
+                                        right: 'auto',
+                                        bottom: 'auto',
+                                        marginRight: '-50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        width: '400px',
+                                    },
+                                }}
+                            >
+                                <h2>비밀번호 확인</h2>
+                                <p>회원 탈퇴를 위해 비밀번호를 입력해주세요.</p>
+                                <input
+                                    type="text"
+                                    value={email}
+                                    onChange={handleEmailChange}
+                                    placeholder="비밀번호 입력"
+                                    style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+                                />
+                                <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                                    <button
+                                        onClick={closeModal}
+                                        style={{ marginRight: '10px', padding: '10px 20px' }}
+                                    >
+                                        취소
+                                    </button>
+                                    <button
+                                        onClick={handleEmailChange}
+                                        style={{ padding: '10px 20px', backgroundColor: '#d9534f', color: '#fff' }}
+                                    >
+                                        확인
+                                    </button>
+                                </div>
+                            </Modal>
                         </form>
                     </div>
                 </article>

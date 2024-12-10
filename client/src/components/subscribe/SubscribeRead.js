@@ -5,8 +5,7 @@ import $ from 'jquery';
 import Swal from 'sweetalert2'
 import cookie from 'react-cookies';
 import Modal from 'react-modal';
-// import moment from 'moment';
-// import 'moment/locale/ko';
+
 
 const SubscribeLRead = (props) => {
     const { sno } = useParams();
@@ -27,36 +26,47 @@ const SubscribeLRead = (props) => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editedContent, setEditedContent] = useState('');
     const [selectRno, setSelectRno] = useState('');
+    const [mtype, setMtype] = useState('');
 
     const [uuidMap, setUuidMap] = useState({}); // mno와 uuid 매핑을 저장
 
 
     // 1. token에서 로그인한 사용자의 id 읽어오기
     useEffect(() => {
-        const token = cookie.load('token'); // 쿠키에서 토큰 가져오기
-        callReplyListApi(sno);
+        const fetchUserData = async () => {
+            try {
+                const token = cookie.load('token'); // 쿠키에서 토큰 가져오기}
+                if (!token) {
+                    console.error("토큰이 없습니다.");
+                    return;
+                }
 
-        if (token) {
-            // 토큰을 서버에 보내서 로그인한 사용자의 uuid를 받아옴
-            axios.post('/api/member/loginCookie', { token })
-                .then(response => {
-                    const userUuid = response.data.uuid; // 서버로부터 받아온 로그인한 사용자의 uuid
-                    setUuid(userUuid);
-                    // 회원 번호(mno)를 가져오기 위해 추가 요청
-                    axios.post('/api/member/readMno', { uuid: userUuid })
-                        .then(response => {
-                            setMno(response.data.mno); // 회원 번호 상태 업데이트
-                            callNboardInfoApi(userUuid); // 받아온 UUID를 기반으로 게시글 정보 요청
-                        })
-                        .catch(error => {
-                            console.error('회원 번호를 가져오는 중 오류 발생:', error);
-                        });
-                })
-                .catch(error => {
-                    console.error('토큰에서 아이디를 읽어올 수 없습니다:', error);
-                });
-        }
+                // uuid 가져오기
+                const { data: { uuid } } = await axios.post('/api/member/loginCookie', { token });
+                setUuid(uuid);
+
+                // 회원번호 가져오기
+                const { data: { mno } } = await axios.post('/api/member/readMno', { uuid });
+                setMno(mno);
+
+                // 게시글 정보 요청
+                callNboardInfoApi(uuid);
+
+                // 회원타입 가져오기 - 단일 데이터를 가져오기 때문에 중괄호 없이 사용
+                const { data: mtype } = await axios.post('/api/member/searchMtype', { uuid });
+                setMtype(mtype || '');
+
+                // 댓글 리스트 요청
+                callReplyListApi(sno);
+            } catch (error) {
+                console.error("62. 사용자 정보를 가져오는 중 오류 발생");
+            }
+
+        };
+
+        fetchUserData();
     }, [sno]);
+
 
     useEffect(() => {
         console.log("uuidMap이 업데이트되었습니다:", uuidMap);
@@ -145,7 +155,9 @@ const SubscribeLRead = (props) => {
 
     // 3. 게시글 작성자와 로그인한 사용자의 UUID가 일치하면 수정/삭제 버튼을 보여줌
     const renderModifyDeleteButtons = () => {
-        if (uuid === writer || mtype === 'a') {
+        const isAuthorized = uuid === writer || mtype === 'a';
+
+        if (isAuthorized) {
             return (
                 <div id="modifyButton" className="btn_confirm mt20" style={{ marginBottom: '44px', textAlign: 'center' }}>
                     <Link to={`/SubscribeUpdate/${sno}`} className="bt_ty bt_ty2 submit_ty1 saveclass">수정</Link>
@@ -160,7 +172,7 @@ const SubscribeLRead = (props) => {
     // 4. 댓글 작성자와 로그인한 사용자의 UUID가 일치하면 수정/삭제 버튼을 보여줌
     const renderReplyModifyDeleteButtons = (data) => {
         // data.replyer를 uuidMap에서 찾아서 현재 로그인한 uuid와 비교
-        if (uuidMap[data.mno] && uuidMap[data.mno] === uuid) {
+        if (uuidMap[data.mno] && uuidMap[data.mno] === uuid || mtype === 'a') {
             return (
                 <div>
                     <button className="catbtn bt_ty2 submit_ty1 saveclass" onClick={() => modifyComment(`${data.rno}`)}>수정</button>

@@ -18,11 +18,15 @@ const MyPage = () => {
     const [pcount, setPcount] = useState('');
 
     const [authCode, setAuthCode] = useState('');
+    const [authCodeInput, setAuthCodeInput] = useState('');
 
     const [isEditingEmail, setIsEditingEmail] = useState(false);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [isEditingEmailOpen, setIsEditingEmailOpen] = useState(false);
     const [initialEmail, setInitialEmail] = useState(''); // 초기 이메일 상태
+    const [inputEmail, setInputEmail] = useState('');
+
+    const [isEmailVerified, setIsEmailVerified] = useState(false); // 인증완료 상태 업데이트
 
 
     const navigate = useNavigate();
@@ -107,9 +111,32 @@ const MyPage = () => {
         navigate.push('/MemberList');
     };
 
+    // 회원정보 요청 실행
     useEffect(() => {
         callMemberInfoApi(); // 컴포넌트 마운트 시 API 호출
     }, []); // 빈 배열을 전달하여 최초 한 번만 실행되도록 설정
+
+    useEffect(() => {
+        console.log('authCode 업데이트됨:', authCode);
+    }, [authCode]);
+
+    useEffect(() => {
+        console.log('authCodeInput 업데이트됨', authCodeInput);
+    }, [authCodeInput]);
+
+    // 이메일 유효성 검사
+    const validateEmail = (email) => {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        /* if (!emailPattern.test(email_val_checker)) {
+            $('#email_val').addClass('border_validate_err');
+            sweetalert('올바른 이메일 형식을 입력해주세요.', '', 'error', '닫기');
+            return false;
+        } */
+
+        // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailPattern.test(email);
+    }
 
 
 
@@ -135,15 +162,37 @@ const MyPage = () => {
 
     // 모달 닫기
     const closeModal = () => {
+        // setIsEditingEmailOpen(false);
         setIsEditingEmailOpen(false);
+        setIsEditingEmail(false);
+        setAuthCode('');
+        setAuthCodeInput('');
+        setEmail(initialEmail); // 초기 이메일 복원
     };
 
     // 이메일 수정
-    const handleEmailChange = (e) => {
-        // 이메일 변경 요청
-        axios.post('/api/member/modiEmail', { email, uuid }).then(() => {
+    const handleEmailChange = async () => {
+
+        if (!email || !validateEmail(email)) {
+            Swal.fire('오류', '변경할 이메일을 올바르게 입력해주세요.', 'error');
+            return;
+        }
+
+        if (authCodeInput !== authCode) {
+            Swal.fire('오류', '인증을 먼저 완료해주세요.', 'error');
+            return;
+        }
+        try {
+            await axios.post('/api/member/modiEmail', { email, uuid });
             Swal.fire('이메일 변경 완료', '이메일이 성공적으로 변경되었습니다.', 'success');
-        });
+            setIsEditingEmailOpen(false); // 모달 닫기
+            setEmail(email); // 이메일 상태 업데이트
+            setInitialEmail(email); // 초기 상태 업데이트
+            navigate('/MyPage'); // 마이페이지로 이동
+        } catch (error) {
+            console.error('이메일 변경 중 오류 발생:', error);
+            Swal.fire('오류', '이메일 변경 중 문제가 발생했습니다.', 'error');
+        }
     };
 
 
@@ -196,15 +245,20 @@ const MyPage = () => {
                                                 style={{ width: '30px' }}
                                                 src={require(`../../img/modify/폰2.png`)} alt="연락처" />
                                         </th>
-                                        <td>{formatPhoneNumber(phone)}</td>
+                                        <th
+                                            style={{ textAlign: 'left' }}
+                                        >{formatPhoneNumber(phone)}</th>
                                     </tr>
 
                                     <tr>
                                         <th><img
                                             style={{ width: '30px' }}
                                             src={require(`../../img/modify/email.png`)} alt="이메일" /></th>
-                                        <td>{maskEmail(email)}</td>
-                                        <button type="button" className="btn-modi" onClick={() => setIsEditingEmailOpen(true)} >수정</button>
+                                        <th
+                                            style={{ textAlign: 'left', width: '600px' }}>{maskEmail(email)}</th>
+                                        <th>
+                                            <button type="button" className="btn-modi" onClick={() => setIsEditingEmailOpen(true)} >수정</button>
+                                        </th>
                                     </tr>
                                 </div>
 
@@ -222,7 +276,8 @@ const MyPage = () => {
                                             style={{ width: '30px' }}
                                             src={require(`../../img/modify/가입일자.png`)} alt="달력" />
                                         </th>
-                                        <td>{regdate}</td>
+                                        <th
+                                            style={{ textAlign: 'left', width: '600px' }}>{regdate}</th>
                                     </tr>
 
                                     <tr>
@@ -230,8 +285,8 @@ const MyPage = () => {
                                             <img
                                                 style={{ width: '40px' }}
                                                 src={require(`../../img/modify/type2.png`)} alt="회원타입" /></th>
-                                        <td
-                                            style={{ verticalAlign: 'middle' }}>{displayMtype()}</td>
+                                        <th
+                                            style={{ textAlign: 'left' }}>{displayMtype()}</th>
 
                                     </tr>
 
@@ -240,8 +295,10 @@ const MyPage = () => {
                                             <img
                                                 style={{ width: '30px' }}
                                                 src={require(`../../img/modify/subscribe.png`)} alt="구독타입" /></th>
-                                        <td>{sstype}등급</td>
-                                        <button type="button" className="btn-modi2">구독타입변경</button>
+                                        <th
+                                            style={{ textAlign: 'left' }}>{sstype}등급</th>
+                                        <th>
+                                            <button type="button" className="btn-modi">구독변경</button> </th>
                                     </tr>
 
                                 </div>
@@ -260,17 +317,20 @@ const MyPage = () => {
                                             style={{ width: '30px' }}
                                             src={require(`../../img/modify/pw2.png`)} alt="비밀번호" />
                                         </th>
-                                        <td>비밀번호</td>
-                                        <button type="button" className="btn-modi">수정</button>
+                                        <th
+                                            style={{ textAlign: 'left ' }}>비밀번호</th>
+                                        <th>
+                                            <button type="button" className="btn-modi">수정</button>
+                                        </th>
                                     </tr>
 
                                     <tr>
                                         <th>
                                             <img
-                                                style={{ width: '40px' }}
-                                                src={require(`../../img/modify/type2.png`)} alt="회원타입" /></th>
-                                        <td
-                                            style={{ verticalAlign: 'middle' }}>포인트 충전</td>
+                                                style={{ width: '30px' }}
+                                                src={require(`../../img/modify/coin2.png`)} alt="회원타입" /></th>
+                                        <th
+                                            style={{ verticalAlign: 'middle', textAlign: 'left', width: '600px' }}>포인트 충전</th>
 
                                     </tr>
 
@@ -328,25 +388,22 @@ const MyPage = () => {
                                     <div>
                                         <input
                                             type="text"
-                                            // value={email}
                                             onChange={(e) => {
-                                                setEmail(e.target.value)
+                                                setInputEmail(e.target.value)
                                                 console.log('입력 값:', e.target.value); // 디버깅용 로그
                                             }} // 입력값 업데이트
-                                            onKeyPress={(e) => {
-                                                console.log('키 입력:', e.key); // 키 입력 로그
-                                            }}
                                             placeholder="기존 이메일을 입력해주세요"
-                                            style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+                                            style={{ width: '80%', padding: '10px', marginTop: '10px', marginRight: '20px' }}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => {
                                                 // 서버로 기존 이메일 확인 요청
                                                 axios
-                                                    .post('/api/member/emailCk', { email })
+                                                    .post('/api/member/emailCk', { inputEmail })
                                                     .then((response) => {
-                                                        if (response.data === 0) {
+                                                        const ok = 1;
+                                                        if (response.data === ok) {
                                                             Swal.fire('확인 성공', '기존 이메일이 확인되었습니다.', 'success');
                                                             setIsEditingEmail(true); // 다음 단계로 진행
                                                         } else {
@@ -372,43 +429,92 @@ const MyPage = () => {
                                                 type="text"
                                                 placeholder="변경할 이메일을 입력해주세요"
                                                 onChange={(e) => {
+                                                    /*  if (!validateEmail(email)) {
+                                                         Swal.fire('오류', '올바른 이메일 형식이 아닙니다.', 'error');
+                                                         return;
+                                                     } */
                                                     setEmail(e.target.value);
                                                     console.log('변경할 이메일:', e.target.value); // 디버깅용 로그
                                                 }}
-                                                style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+                                                style={{ width: '80%', padding: '10px', marginTop: '10px', marginRight: '20px' }}
                                             />
+                                               
                                             <button type="button"
                                                 onClick={() => {
+                                                    if (!validateEmail(email)) {
+                                                        Swal.fire('오류', '올바른 이메일 형식이 아닙니다.', 'error');
+                                                        return;
+                                                    }
                                                     // 서버로 이메일 인증번호 요청
-                                                    axios.post('/api/mail/email', { email }).then(() => {
+                                                    axios.post('/api/mail/email', { email }).then((response) => {
+                                                        setAuthCode(response.data.toString()); // 서버에서 반환된 인증번호 저장
+                                                        console.log(response.data);
+                                                        // console.log(authCode);
                                                         Swal.fire('인증번호 발송 완료', '입력하신 이메일로 인증번호가 발송되었습니다.', 'success');
+                                                    }).catch((error) => {
+                                                        console.error("API 요청 중 에러 발생:", error);
+                                                        console.log("보낸 이메일:", email); // 이메일 값 확인
+
                                                     });
                                                 }}
                                                 style={{ padding: '10px 20px', marginTop: '10px' }}>인증</button> {/* 인증버튼 누르면 이메일로 인증번호 발송 --> '/api/mail' */}
+                                                 <p style={{color: 'grey', fontSize: '12px'}}> * 인증번호 발송은 최대 1분 정도가 소요됩니다. 버튼을 한 번만 누르고 기다려 주세요.</p>
                                         </div>
 
                                         <div>
                                             <input
                                                 type="text"
                                                 placeholder="인증번호 입력"
-                                                style={{ width: '100%', padding: '10px', marginTop: '10px' }}
+                                                value={authCodeInput}
+                                                onChange={(e) => setAuthCodeInput(e.target.value)}
+                                                style={{ width: '69%', padding: '10px', marginTop: '10px', marginRight: '20px' }}
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+
+
+                                                    if (authCodeInput === authCode) {
+                                                        Swal.fire('인증 성공', '인증번호가 일치합니다.', 'success');
+                                                        setIsEditingEmail(true); // 인증 성공 후 변경 상태로 전환
+                                                        setIsEmailVerified(true); // 이메일 인증 완료 상태 설정
+                                                        // setAuthCodeInput(''); // 입력 필드 초기화
+                                                    } else {
+                                                        Swal.fire('오류', '인증번호가 일치하지 않습니다.', 'error');
+                                                        console.log("입력한 번호: " + authCodeInput + "  | 인증번호: " + authCode);
+                                                    }
+                                                }
+                                                }
+                                                style={{ padding: '10px 20px' }}
+                                            >
+                                                인증번호 확인
+                                            </button>
                                         </div>
                                     </div>
                                 }
+
+
                                 <div style={{ marginTop: '20px', textAlign: 'right' }}>
                                     <button
-                                        onClick={closeModal}
-                                        style={{ marginRight: '10px', padding: '10px 20px' }}
-                                    >
-                                        취소
-                                    </button>
-                                    <button
+                                        disabled={!isEmailVerified} // 인증번호 확인 후만 활성화
                                         onClick={handleEmailChange}
-                                        style={{ padding: '10px 20px', backgroundColor: '#d9534f', color: '#fff' }}
+                                        style={{
+                                            padding: '10px 20px',
+                                            backgroundColor: authCodeInput === authCode ? '#006eff' : '#ccc', // 조건에 따라 버튼 색상 변경
+                                            color: '#fff',
+                                            cursor: authCodeInput === authCode ? 'pointer' : 'not-allowed',
+                                        }}
                                     >
                                         변경
                                     </button>
+
+                                    <button
+                                        onClick={closeModal}
+                                        style={{ padding: '10px 20px', backgroundColor: '#d9534f', color: '#fff' }}
+                                    >
+                                        취소
+                                    </button>
+
                                 </div>
                             </Modal>
 

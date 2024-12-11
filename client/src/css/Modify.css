@@ -49,8 +49,7 @@
   border-radius: 4px;
   color: #fff;
   margin-top: 20px;
-  margin-left: 10px;  /* 버튼과 텍스트 사이 간격 */
-  line-height: 40px;  /* 버튼 텍스트의 수직 정렬 */
+ 
 }
 
 .btn-modi2 {

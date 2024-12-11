@@ -81,7 +81,6 @@ const ChallengeRead = (props) => {
         return visiblePart + maskedPart;
     };
 
-
     useEffect(() => {
         console.log("uuidMap이 업데이트되었습니다:", uuidMap);
         setAppend_ReplyList(ReplyListAppend(responseReplyList));

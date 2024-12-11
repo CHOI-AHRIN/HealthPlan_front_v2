@@ -250,7 +250,7 @@
 
 
 .My_info {
-    border: 2px solid #2c2c92;
+    border: 2px solid #afaff1;
     /* 두께: 2px, 스타일: 실선(solid), 색상: 파랑 */
     border-radius: 8px;
     margin-top: 20px;
@@ -268,10 +268,12 @@
 }
 
 .My_info th {
-    font-size: 25px;
+    font-size: 22px;
     color: 000;
     font-weight: 500;
-    width: 100px;
+    width: 70px;
+    vertical-align: middle;
+
 
 }
 

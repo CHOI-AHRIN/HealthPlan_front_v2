@@ -17,7 +17,6 @@ const Modify = () => {
     const [isEditingEmail, setIsEditingEmail] = useState(false);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [isEditingEmailOpen, setIsEditingEmailOpen] = useState(false);
-
     const [initialEmail, setInitialEmail] = useState(''); // 초기 이메일 상태
 
 

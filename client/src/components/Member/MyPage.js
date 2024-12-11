@@ -342,9 +342,9 @@ const MyPage = () => {
 
 
 
-                            <div className="btn_confirm">
+                            {/* <div className="btn_confirm">
                                 <Link to={'/Modify'} className="bt_ty bt_ty2 submit_ty1 modifyclass">프로필수정</Link>
-                            </div>
+                            </div> */}
 
 
 
